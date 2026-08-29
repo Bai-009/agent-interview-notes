@@ -42,6 +42,16 @@ def line_of(text: str, idx: int) -> int:
     return text[:idx].count("\n") + 1
 
 
+def question_files() -> list[str]:
+    return sorted(glob.glob("0[1-6]-*/Q*.md"))
+
+
+def is_stub(path: str) -> bool:
+    """题目档：题目已给出但未作答（掌握度 🔄进行中）。只有题面与空白作答区，
+    不该按完成记录的标准去查必备节，也不计入完成数。"""
+    return "掌握度: 🔄进行中" in read(path)
+
+
 def report(name: str, bad: list[str], detail_limit: int = 20):
     if bad:
         problems.extend(bad)
@@ -140,6 +150,17 @@ def banned_terms() -> set[str]:
     return terms
 
 
+def strip_primary_quotes(text: str) -> str:
+    """第 2 / 2.5 节的引文是一手材料，用词规范对它不适用（CLAUDE.md 5.5 的例外条款）。
+    置空而不删行，保持行号不变。"""
+    out, in_primary = [], False
+    for line in text.split("\n"):
+        if line.startswith("## "):
+            in_primary = bool(re.match(r"## 2(\.5)?[ .]", line))
+        out.append("" if in_primary and line.lstrip().startswith(">") else line)
+    return "\n".join(out)
+
+
 def check_wording():
     terms = banned_terms()
     if not terms:
@@ -147,7 +168,7 @@ def check_wording():
         return
     bad = []
     for p in md_files():
-        text = read(p)
+        text = strip_primary_quotes(read(p))
         if p == "CLAUDE.md":                       # 对照表本身与其上下文豁免
             text = re.sub(r"## 5\.5.*?(?=\n## )", "", text, flags=re.S)
         for n, line in enumerate(text.split("\n"), 1):
@@ -159,8 +180,8 @@ def check_wording():
 
 # ── 5. 知识网络 ↔ 公共资产表 边一致性 ──────────────────────────────
 def check_graph_edges():
-    # 实线边只画在**已有记录**的题之间；指向未作答题的是虚线，不参与本项比对
-    done = {os.path.basename(p)[:3] for p in glob.glob("0[1-6]-*/Q*.md")}
+    # 实线边只画在**已有记录**的题之间；指向未作答题（含题目档）的是虚线，不参与本项比对
+    done = {os.path.basename(p)[:3] for p in question_files() if not is_stub(p)}
     prog = read("00-索引/题库进度.md")
     rows = [l for l in prog.split("\n") if l.startswith("| **") and l.count("|") >= 4]
     asset = set()
@@ -194,7 +215,9 @@ def check_sections():
             (r"^## 9\. ", "核心结论"),
             (r"^## 10\. ", "复习记录")]
     bad = []
-    for p in sorted(glob.glob("0[1-6]-*/Q*.md")):
+    for p in question_files():
+        if is_stub(p):                             # 题目档只有题面，不适用
+            continue
         text = read(p)
         for pat, label in need:
             if not re.search(pat, text, re.M):
@@ -204,20 +227,24 @@ def check_sections():
 
 # ── 7. 计数一致性 ─────────────────────────────────────────────────
 def check_counts():
-    actual = len(glob.glob("0[1-6]-*/Q*.md"))
+    files = question_files()
+    done = [p for p in files if not is_stub(p)]
+    stubs = [p for p in files if is_stub(p)]
     bad = []
-    for p, pat in [("README.md", r"`进度 (\d+) / 22`"),
-                   ("00-索引/题库进度.md", r"`已完成 (\d+) / 22`")]:
+    for p, pat, n, label in [("README.md", r"`进度 (\d+) / 22`", len(done), "记录"),
+                             ("README.md", r"`进行中 (\d+)`", len(stubs), "题目档"),
+                             ("00-索引/题库进度.md", r"`已完成 (\d+) / 22`", len(done), "记录"),
+                             ("00-索引/题库进度.md", r"`进行中 (\d+)`", len(stubs), "题目档")]:
         m = re.search(pat, read(p))
         if not m:
-            bad.append(f"{p} 找不到进度徽章")
-        elif int(m.group(1)) != actual:
-            bad.append(f"{p} 写 {m.group(1)}，实际有 {actual} 篇记录")
+            bad.append(f"{p} 找不到徽章 {pat}")
+        elif int(m.group(1)) != n:
+            bad.append(f"{p} 写 {m.group(1)}，实际有 {n} 篇{label}")
     m = re.search(r"`已基线核查 (\d+)`", read("00-索引/题库进度.md"))
-    n76 = sum(1 for p in glob.glob("0[1-6]-*/Q*.md") if re.search(r"^## 7\.6 ", read(p), re.M))
+    n76 = sum(1 for p in done if re.search(r"^## 7\.6 ", read(p), re.M))
     if m and int(m.group(1)) != n76:
         bad.append(f"题库进度写「已基线核查 {m.group(1)}」，实际有 7.6 节的是 {n76} 篇")
-    report(f"计数一致（{actual} 篇记录）", bad)
+    report(f"计数一致（{len(done)} 篇记录 / {len(stubs)} 篇题目档）", bad)
 
 
 if __name__ == "__main__":

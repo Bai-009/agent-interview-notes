@@ -3,3 +3,6 @@
 # Obsidian：本仓可作为 vault 直接打开，但每个人的界面状态与插件配置不入库
 .obsidian/
 .trash/
+
+# Python
+__pycache__/
