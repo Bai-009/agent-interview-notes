@@ -101,7 +101,8 @@ def check_wikilinks():
         text = read(p)
         stripped = re.sub(r"`[^`]*`", "", text)   # 反引号里的是示意写法，不算链接
         for m in re.finditer(r"\[\[([^\]]+)\]\]", stripped):
-            name = m.group(1).split("|")[0].strip()
+            # 表格里的别名双链必须写成 [[名字\|别名]]，解析时把转义的反斜杠一并去掉
+            name = re.split(r"\\?\|", m.group(1))[0].strip()
             if name in existing:
                 resolved += 1
             elif name in planned:
@@ -110,6 +111,17 @@ def check_wikilinks():
                 bad.append(f"{p}:{line_of(stripped, m.start())} [[{name}]]"
                            f"  ← 既非现有文件，也不在规划文件名表里")
     report(f"双链可解析（现有 {resolved} / 待建 {pending}）", bad)
+
+
+def check_table_pipes():
+    """表格单元格里的 [[名字|别名]] 会在竖线处被切成两格——别名和表格一起坏。
+    GFM 与 Obsidian 都要求写成 [[名字\\|别名]]。"""
+    bad = []
+    for p in md_files():
+        for i, line in enumerate(read(p).split("\n"), 1):
+            if line.lstrip().startswith("|") and re.search(r"\[\[[^\]\\|]*?\|", line):
+                bad.append(f"{p}:{i} 表格内的别名双链竖线未转义，应写 [[名字\\|别名]]")
+    report("表格内别名双链已转义", bad)
 
 
 # ── 3. 表格被空行截断（GitHub 上会渲染成纯文本）─────────────────────
@@ -249,7 +261,7 @@ def check_counts():
 
 if __name__ == "__main__":
     print(f"仓库自检 · {ROOT}\n" + "─" * 60)
-    for fn in (check_relative_links, check_wikilinks, check_tables, check_wording,
+    for fn in (check_relative_links, check_wikilinks, check_table_pipes, check_tables, check_wording,
                check_graph_edges, check_sections, check_counts):
         fn()
     print("─" * 60)
