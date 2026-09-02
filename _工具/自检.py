@@ -259,11 +259,60 @@ def check_counts():
     report(f"计数一致（{len(done)} 篇记录 / {len(stubs)} 篇题目档）", bad)
 
 
+# ── 8. 索引徽章日期跟上修改 ─────────────────────────────────────────
+def check_badge_dates():
+    """索引页顶部的「更新: YYYY-MM-DD」徽章是读者判断新旧的唯一依据。
+    约定：徽章 = 该文件最后一次被编辑的日期——干净文件对齐它最后一次提交，
+    工作区里改过的文件必须写当天。2026-09-02 加：当时 6 个索引文件的徽章落后于实际修改。"""
+    import subprocess, datetime
+    today = datetime.date.today().isoformat()
+
+    def git(*args):
+        return subprocess.run(["git", *args], capture_output=True, text=True).stdout.strip()
+
+    bad = []
+    for p in ["README.md", "07-补充议题/README.md"] + sorted(glob.glob("00-索引/*.md")):
+        m = re.search(r"`更新:? ?(\d{4}-\d{2}-\d{2})", read(p))
+        if not m:
+            continue
+        dirty = git("status", "--porcelain", "--", p) != ""
+        last = git("log", "-1", "--format=%ad", "--date=short", "--", p)
+        want = today if dirty else last
+        if want and m.group(1) != want:
+            why = "工作区已修改，应写当天" if dirty else f"最后提交于 {last}"
+            bad.append(f"{p} 徽章写 {m.group(1)}，应为 {want}（{why}）")
+    report("索引徽章日期跟上修改", bad)
+
+
+# ── 9. 量词巡检（只列不判）────────────────────────────────────────────
+QUANTIFIERS = r"主流|通常|大多数|绝大多数|一般来说|普遍|几乎所有"
+
+
+def list_quantifiers(verbose: bool):
+    """台账「反例巡检」观察项的机械部分：把带量词的技术论断列出来，判断留给人。
+    不计入失败。跳过一手材料（_原始记录、第 2/2.5 节引文）、模板与规范本身，
+    以及引号里讨论量词本身的句子。2026-09-02 首次运行即查出 Q09 两处改漏的「同步仍是主流」。"""
+    hits = []
+    for p in md_files():
+        if p.startswith("_模板/") or p == "CLAUDE.md":
+            continue
+        text = strip_primary_quotes(read(p))
+        for n, line in enumerate(text.split("\n"), 1):
+            if re.search(QUANTIFIERS, line) and not re.search(r"量词|反例巡检|「[^」]*主流[^」]*」", line):
+                hits.append(f"{p}:{n} {line.strip()[:90]}")
+    tail = "" if verbose else "；加 --巡检 看明细"
+    print(f"ℹ️ 量词巡检：{len(hits)} 处（只列不判{tail}）")
+    if verbose:
+        for h in hits:
+            print(f"     {h}")
+
+
 if __name__ == "__main__":
     print(f"仓库自检 · {ROOT}\n" + "─" * 60)
     for fn in (check_relative_links, check_wikilinks, check_table_pipes, check_tables, check_wording,
-               check_graph_edges, check_sections, check_counts):
+               check_graph_edges, check_sections, check_counts, check_badge_dates):
         fn()
+    list_quantifiers(verbose="--巡检" in sys.argv)
     print("─" * 60)
     if problems:
         print(f"合计 {len(problems)} 处待处理")
