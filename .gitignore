@@ -6,3 +6,6 @@
 
 # Python
 __pycache__/
+
+# Claude Code：技能入库（.claude/skills/），个人本地设置不入库
+.claude/settings.local.json
