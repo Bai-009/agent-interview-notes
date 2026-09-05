@@ -6,15 +6,16 @@
 > 三处待补：① 协议与服务器混为一谈（**用户自己标注了这一点**，是加分行为）；② 说 Skill「本质还是提示词」——**材料已在手上却没推到结论**，见第 3 节；③ 渐进式披露与工具定义的 token 账完全没提。
 > 📌 **本题真正的收获在追问，不在首答**：三问里的第二问（为什么不合成一体）问出了全题最有价值的一段，第三问（20 个 MCP = 20 个进程？）把出题人逼进了沙箱，并**抓出出题人一处病句**——这是继 [[Q09-主子Agent通信与异常\|Q09]] 之后第二次。
 > ⚠️ **2026-09-05 查证**：出题人讲解第六节「2026 年 1 月 MCP 用上了渐进式披露」**不成立**——那是客户端/API 的能力，不是协议的能力。详见 7.5 第 1 条。这一条恰好踩了本题第一节自己立的界线。
+> 📌 **2026-09-05 追问四（归档后，向维护方）**：用户追问「MCP 和工具怎么区分」，三轮后**用自己的话总结出**工具的三个来源与两条路（自带 / MCP 接入 / CLI 经终端），四条判断全部成立。原话见 2.5 节，讲解见 4.5 节。维护方第一版回复因概念过载被用户驳回——记为维护方的流程教训（[规范](../CLAUDE.md) ③）。
 
 ---
 
 ## ⚡ 30 秒速览（复习时只看这一块）
 
 - **一句话回答**：MCP 和 Skill 是两层不是两派——**MCP 是连接层，解决「够不着」；Skill 是知识层，解决「不会用」**。判据是这个能力需不需要一条活着的连接。
-- **必须覆盖的关键词**：`协议≠服务器≠客户端` `够不着 vs 不会用` `活连接/凭据/授权边界` `scripts 被执行不被读` `工具定义的 token 账` `渐进式披露在客户端不在协议` `进程隔离≠沙箱` `经不经过模型`
+- **必须覆盖的关键词**：`协议≠服务器≠客户端` `够不着 vs 不会用` `活连接/凭据/授权边界` `scripts 被执行不被读` `工具定义的 token 账` `渐进式披露在客户端不在协议` `进程隔离≠沙箱` `经不经过模型` `自带 / MCP 接入 / CLI 经终端` `说明书在脑子里 vs 在上下文里`
 - **上次的失分点**：把 MCP 当成「一套软件包」（那是服务器）；说 Skill「本质是提示词」——自己已经列出 `scripts/` 里是代码，却没让这个事实改变结论。
-- **答题骨架**：① 分层（协议 / 服务器 / 客户端）→ ② 两者各解决什么 + 判据 → ③ 代价：工具定义的 token 账与选择准确率 → ④ 边界：为什么不会合成一个 + 沙箱。
+- **答题骨架**：① 分层（协议 / 服务器 / 客户端）→ ② 两者各解决什么 + 判据 → ③ 代价：工具定义的 token 账与选择准确率 → ④ 边界：为什么不会合成一个 + 沙箱 → ⑤ 工具的三个来源：自带 / MCP / CLI，差别只在说明书放哪。
 
 ---
 
@@ -74,6 +75,23 @@
 
 > ⚠️ **断档**：追问三之后、出题人「你抓对了，那句话是我写坏的」之前，缺**出题人讲进程与线程的那一段**，以及**我指出病句的那句原话**。已在归档中标注，不补写。
 
+**追问四**（2026-09-05，归档完成后，向维护方）——首答的失分点在这里被用户自己补上：
+
+> 其实我对Q11还是有很多疑问的。
+> MCP和工具之间的区分到底该如何区分？很多人会混淆这个概念，而且现在也的确在混淆，MCP快成了一个插件的意义，而工具，人们认为是function calling。
+
+维护方第一版回复因概念过载被驳回（原话：「你给的回复，我很难看懂，里面揉杂了太多概念了，我没有责任自己去拆解，那很累」）。第二版之后，用户说出了自己的模型：
+
+> function calling是一种行为模式，MCP服务器我几乎从来没有听别人这么说过。我觉得你不知道我混淆的概念在哪。我是认为，所有的Agent能调用的工具，其实会分成两部分，一部分是Claude code本身自带的，一部分是MCP接入进来的，我自己写的一个agent工具，很可能并没有走MCP协议，但是也还是能用。MCP协议的，其实背后有一套软件可以被调用，这就是我认为的SDK，比如GitHub，里面有十几个工具都是MCP工具，这十几个工具都可以被agent调用GitHub完成不同的事情，就是这里面起了一个GitHub的服务一套软件在做事情。那么问题又来了，现在agent也会接入CLI，命令行工具去操控GitHub，这和MCP又不一样了。
+
+讲解之后，用户的总结：
+
+> 所以我来总结一下。
+> CLI不需要额外的去配置什么说明，模型训练过其实是可以接龙出来的，只需要调用的是终端工具即可。
+> MCP是一个协议，背后可以是一套MCP服务器，是在自己的电脑的另一个进程或者是别的远端服务器上。MCP只是一种工具的契约形式，而agent去调用这个工具，实际上是发送到服务端，是这个意思吧？然后服务端执行后，把tool_result再传递回来。而这个里面其实也要给到agent工具的使用说明。
+
+全过程见 [2026-09-05 追问归档](../_原始记录/2026-09-05-Q11追问-MCP与工具与CLI.md)。
+
 ---
 
 ## 3. 诊断
@@ -126,6 +144,14 @@
 > 这是继 Q09 三次拦下出题人之后，**第二道由用户抓出出题人错误的题**。Q09 那三次是「你说的机制不对」；这次是「你这句话自相矛盾」。**两种拦截都有效，而后者只需要读得够仔细。**
 
 **追问一的价值是「不装懂」。** 「我不懂代码，所以你说什么客户端、MCP 服务器，我也是蒙圈的」——这一问逼出了本题最好懂的那段解释（客户端问、服务器答的那张流程图），也让出题人当场改了讲法。**在面试里这一招同样成立**：面试官用了你不确定的词，问一句比猜着往下答强。
+
+**追问四（2026-09-05，归档后向维护方）——三个动作，三个都对。**
+
+1. **先驳回过载的回复。** 「我没有责任自己去拆解」——这句话是 [[Q02-SystemPrompt与Fewshot与CoT|Q02]]「报不动的引用不如不报」对讲解方生效的版本：材料的完整性不是回答的质量。
+2. **然后说出自己的模型，而不是等讲解。** 「工具分两部分：自带的、MCP 接进来的；自己写的工具不走 MCP 也能用；MCP 背后有一套软件跑着，GitHub 那十几个工具就是它列出来的」——**概念全对，错的只是一个词**：那套软件叫「服务」不叫「SDK」（SDK 是用来写它的库，MCP 官方发的就是 Python / TypeScript SDK）。首答的「类似于 SDK，是一套软件包」在这里被定位清楚：**不是协议和软件混了，是给软件用错了名字。**
+3. **最后自己总结出两条路。** 四条判断全部成立（见 4.5）。维护方补的「agent 发送到服务端要拆成模型开口、软件发送」被用户当场澄清：「我说的调用的意思就是模型去吐出json……不是模型去操控」——**概念本来就对，只是「agent」一词同时装着模型和软件**。真正只剩一处精度：「CLI 不需要说明」准确说是**不需要每件事一份说明**——终端本身也有一份，几十件事共用。
+
+> 这一轮和追问一是同一种能力：**面对听不懂的讲解，不猜着往下走，而是逼对方换成你听得懂的话。** 追问一逼的是出题人，追问四逼的是维护方。
 
 ---
 
@@ -278,9 +304,46 @@ Skill 是分三层加载的：常驻只有名字和描述 → 被触发才读 `S
 
 Codex 的做法是直接用各操作系统提供的圈：**macOS 用 Seatbelt（`sandbox-exec`）、Linux 用 Landlock + seccomp、Windows 用受限令牌 + ACL**。理由就是上面那句：自己写的检查在程序内部，可能有漏洞、可能被绕过；操作系统的圈在内核里，程序自己出不去。
 
+### 4.5 工具的三个来源：自带、MCP 接入、CLI 经终端（由追问四引出）
+
+这一节回答归档后的追问：「MCP 和工具怎么区分？agent 用 CLI 操作 GitHub 和用 MCP 有什么不一样？」
+
+**先把三个词各放回自己的问题上：**
+
+| 问题 | 答案叫什么 |
+| --- | --- |
+| 能做什么事？ | 工具 |
+| 模型怎么开口要求做这件事？ | function calling |
+| 运行模型的软件，怎么从外面接进一件别人做的工具？ | MCP |
+
+工具是**一件事**，function calling 是**模型开口的方式**，MCP 是**软件对外接东西的方式**。三个词回答三个问题，谁都不等于谁。**模型从头到尾只做「开口」这一件事**（[[Q08-Agent自主运行|Q08]]：只有请求权）——它不知道、也不需要知道那件事最后是软件自己做的，还是通过 MCP 转给外面的程序做的。在模型看来，两种工具长得一模一样。
+
+**「MCP 是插件」错在哪**：把插口标准说成了插上去的那个东西。你装的是一个按 MCP 标准写出来的程序（本记录称 MCP 服务器；日常口语「GitHub 的 MCP」指的就是它），它才是「插件」。MCP 本身是标准，装不了——首答里 USB / U 盘那一步。⚠️ 背后那套软件**不叫 SDK**：SDK 是用来写它的库，MCP 官方发的就是 Python / TypeScript SDK；面试里说「MCP 背后是一套 SDK」会被理解成另一样东西。
+
+**「工具是 function calling」错在哪**：把要做的事说成了开口的方式。开口的方式只有一种，事有一万件；同一种开口方式，那件事可以是软件自带的（Claude Code 自己会读文件），也可以是 MCP 从外面接的（查 GitHub）——模型自己分不出来，说明它俩不是一回事。
+
+**同一件事的两条路——以操作 GitHub 为例：**
+
+- **CLI 路**：Claude Code 自带一只手——终端。模型在终端里接龙出 `gh pr create`，跟你自己敲一样。「gh 怎么用」在**模型脑子里**（训练时学过），登录状态在**你电脑上**。Claude Code 官方文档原句：「CLI tools are the **most context-efficient** way to interact with external services」，并建议装 `gh`。
+- **MCP 路**：GitHub 的 MCP 把几十件事列成几十个工具，**每个带一份说明书进上下文**；模型照说明书填表；背后那个服务**拿着登录状态**去调 GitHub。官方对 MCP 的定位原句：「purpose-built tools for an external system, with the **connection and authentication handled by the server**」。
+
+**区别一句话：CLI 路要求「有终端」，MCP 路不要求。**
+
+| | CLI 路 | MCP 路 |
+| --- | --- | --- |
+| 说明书在哪 | 模型脑子里；终端本身只有一份说明，几十件事共用 | 上下文里，每件事一份——GitHub 的 MCP 35 个工具约 26K token（4.3 节那笔账，全量加载时的数） |
+| 登录在哪 | 你的电脑，终端里的程序都能用 | 那个服务手里，它替你拿着 |
+| 谁用得了 | 只有**有终端**的软件：Claude Code | 任何软件，包括**没有终端**的：claude.ai 网页版（那边叫 connector） |
+
+所以 Anthropic 两条都做，不矛盾：Claude Code 有终端，凡是有命令行工具的服务（`gh`、`aws`、`gcloud`）不装 MCP 也够得着，还更省；网页版没有你的终端，要碰 GitHub 只能靠 MCP。模型不认识的命令行工具，官方给的办法是让它先跑一遍 `--help` 自己学，或者写个 Skill（菜谱）。
+
+**接回本题的两个词**：CLI 路把「够得着」交给终端、把「会不会用」交给模型或菜谱；MCP 路把两件事打包——说明书随工具一起来。
+
+> ⚠️ 两处补充（对用户总结的）：① 用户说的「调用」= 模型吐出工具调用的 JSON（他自己的澄清：「不是模型去操控」），这就是**模型开口、软件发送**，概念一致；「agent 发送」只是「agent」一词同时装着模型和软件，面试里把两者点开说更稳——结果回来也是软件先收到再摆进上下文，模型两头都不碰服务端，「要不要放行」就卡在软件这一层，是 [[Q20-工具调用安全|Q20]] 的地基。② Claude Code 现在默认只先给工具的**名字**，用到哪个再给哪个的说明书（4.3 节「渐进式披露在客户端」），所以 26K 是全量加载时的数，今天默认没那么贵。
+
 ---
 
-## 5. 第一性原理（往下再挖一层）
+（往下再挖一层）
 
 **本质约束：模型是纯函数，而外部世界是有状态的。**
 
@@ -314,6 +377,8 @@ Codex 的做法是直接用各操作系统提供的圈：**macOS 用 Seatbelt（
 | 9 | MCP 接下来要解决什么问题？ | 路线图（2026-08-22）五方向，最值得说的是 **agent 身份与企业安全**——原句「MCP authorization assumes a person with a browser at consent time」，而 agent 不是人，还会派出应当权限更窄的子 agent | ☐ |
 | 10 | Skill 只能在 Claude 里用吗？ | 不是，而且这半年变化很大：OpenAI 在 Codex 官方支持 Skills；**Agent Plugins 1.0.0**（2026-08-06）把 Skill 与 MCP 打成同一个包；**MCP 本身已归 Agent AI Foundation**（Linux Foundation 旗下），不再是 Anthropic 独有 | ☐ |
 | 11 | 一个 Skill 里最重要的是哪部分？ | `scripts/`。官方注解是 **"executed, not loaded"**——被执行，不进上下文，所以**不会被漂移掉**。`SKILL.md` 是软的，`scripts/` 是硬的 | ☐ |
+| 12 | MCP 和工具、function calling 到底怎么区分？ | **三个词答三个问题**：工具是能做的一件事；function calling 是模型开口的方式；MCP 是软件从外面接工具的方式。模型只做开口——自带工具和 MCP 工具在它眼里长得一样。「MCP 是插件」错在把标准说成插上去的东西；「工具是 function calling」错在把事说成开口方式；背后那套软件叫服务，不叫 SDK | ☐ |
+| 13 | agent 用 CLI 操作 GitHub 和用 MCP 有什么区别？ | **两条路，一句话：CLI 路要求有终端，MCP 路不要求。** CLI：一只手（终端）+ 模型脑子里的说明书 + 你电脑上的登录，官方称「最省上下文」；MCP：契约 + 背后一个服务替你拿着登录 + 每件事一份说明书进上下文。有终端时前者省，没终端（网页版）只有后者 | ☐ |
 
 ---
 
@@ -346,6 +411,11 @@ Codex 的做法是直接用各操作系统提供的圈：**macOS 用 Seatbelt（
 | 「授权规范是为人点浏览器写的」 | ✅ **一手原句**：「MCP authorization assumes a person with a browser at consent time.」同段还批评现有服务器「lean on pasted API keys and long-lived refresh tokens」 |
 | 沙箱由操作系统强制、限制文件与网络 | ✅ Claude Code 安全文档：「Sandbox bash commands with **filesystem and network isolation**」；并自陈「no system is completely immune to all attacks」 |
 | Codex 用 Seatbelt / Landlock | ✅ 方向属实：macOS 走 `sandbox-exec` + Seatbelt profile，Linux 用 Landlock + seccomp-bpf，Windows 用受限令牌 + ACL（Windows 无对等原语，是自建的） |
+| 工具调用即 function calling；执行在应用侧 | ✅ Anthropic 工具文档首句「Tool use (**also called function calling**) lets Claude call functions… It then returns a structured call that **your application executes**」；并按「代码在哪跑」分 client tools / server tools |
+| 模型和 MCP 服务器之间没有直接的边 | ✅ MCP 规范 2026-07-28 Architecture：「client-host-server architecture」，客户端「communicates with **exactly one** server」；设计原则「Servers should not be able to read the whole conversation」「Full conversation history stays with the host」 |
+| MCP 服务器可本机可远端 | ✅ 同页原句「Can be **local processes or remote services**」 |
+| CLI 是最省上下文的接外部服务方式 | ✅ Claude Code Best practices 原句「CLI tools are the **most context-efficient** way to interact with external services. If you use GitHub, install the `gh` CLI」；不认识的工具：「Use 'foo-cli-tool --help' to learn about foo tool」 |
+| MCP 的定位：连接与认证由服务器负责 | ✅ Claude Code《Extend Claude Code》原句「MCP gives Claude purpose-built tools for an external system, with the **connection and authentication handled by the server**」；同页上下文成本表：MCP 服务器「Tool names; full schemas on demand」「Tool search is on by default」 |
 
 ### ➕ 本次新增（能直接拉高答案深度）
 
@@ -354,6 +424,7 @@ Codex 的做法是直接用各操作系统提供的圈：**macOS 用 Seatbelt（
 3. **Agent Plugins 1.0.0**（2026-08-06）——见 7.6，这是这半年真正的大事，出题人讲成了「社区写了桥接服务器」。
 4. **hook 那个例子的正确版本**：出题人举的「2026 年 4 月 PyPI 蠕虫，仅仅打开项目就执行了恶意载荷」是**两件事被焊在一起**，见下方存疑表。真正对得上的实例是 **CVE-2025-59536**（Check Point Research 披露）：攻击者把 shell 命令写进仓库的 `.claude/settings.json`，用 `SessionStart` hook，**开发者在克隆目录里启动 Claude Code 时立即执行**，拿到开发者的全部权限。这个例子和「hook 用你的权限自动跑」严丝合缝。Anthropic 已加信任确认对话框应对（安全文档里的 "Trust verification"）。
 5. **接 [[Q10-上下文漂移与工具幻觉\|Q10]] 与 [[Q05-StructuredOutput\|Q05]] 的一条**：Anthropic 的 strict schema **不支持数值范围约束**（`minimum` / `maximum` / `multipleOf` 明列为不支持）。所以「pH 落在 0–14」**不是选择放进代码校验器，是 schema 层结构上放不下**——「schema 管形状不管内容」在这个例子上有精确的技术原因。
+6. **工具的三个来源与两条路**（追问四引出，见 4.5）：自带 / MCP 接入 / CLI 经终端。这条把本题从「MCP vs Skill」扩成「MCP vs 一切别的接工具方式」，而且判据只有一个——**说明书放在模型脑子里还是上下文里**。可迁移到 [[Q22-Skill管理与可扩展性|Q22]]（Skill 恰好是给 CLI 路补说明书的东西）。
 
 ### 📌 用词校准 / 最该记住的修正
 
@@ -369,6 +440,8 @@ Codex 的做法是直接用各操作系统提供的圈：**macOS 用 Seatbelt（
 **第 2 条：量词要跟着来源的条件走。** 「连了几十个 MCP 服务器的 agent，读到用户第一句话之前已经处理了几十万 token」——原句（Anthropic《Code execution with MCP》，Adam Jones & Conor Kelly，2025-11-04）的条件是「agents are connected to **thousands of tools**」，不是几十个服务器。5 个服务器 58 个工具是 55K，离几十万还远。同一篇给的对照是「reduces the token usage from 150,000 tokens to 2,000 tokens—a time and cost saving of 98.7%」。**这是 [[Q09-主子Agent通信与异常\|Q09]] 那条「范围外推」的同类。**
 
 **第 3 条：Skill 的「标准结构」不是官方规范。** `references/` 与 `assets/` 这两个复数目录名在官方文档里查不到；官方只规定 `SKILL.md` 必需，示例树用的是 `reference.md`、`examples.md` 加一个 `scripts/`。**这么组织不算错，但别说成「标准的 skills 结构」。**
+
+**第 4 条（追问四）：背后那套软件叫「服务」，不叫「SDK」。** 首答与追问三都把 MCP 背后跑着的软件叫 SDK。概念对（一套跑着的软件，对外列出工具），词错——SDK 是**用来写**它的库（MCP 官方发的 Python / TypeScript SDK、Anthropic SDK 里的 MCP 助手）。面试里说「MCP 背后是一套 SDK」会被理解成另一样东西。日常口语「GitHub 的 MCP」指的就是那个服务，可以照用；要解释时说「背后跑着一个服务」。
 
 ### ⚠️ 存疑不背书
 
@@ -423,6 +496,8 @@ Codex 的做法是直接用各操作系统提供的圈：**macOS 用 Seatbelt（
 ## 9. 核心结论
 
 > **MCP 和 Skill 是两层不是两派：MCP 是连接层，解决「够不着」；Skill 是知识层，解决「不会用」。判据只有一条——这个能力需不需要一条活着的连接：要活连接、会话状态、按用户的认证权限，就建服务器；主要是流程、判断、参考资料，就写 Skill。它们现在被打进同一个包发布（Agent Plugins 1.0.0），但内部永远是两个东西，因为知识可以复制、连接不能复制。而一个 Skill 里最不会失效的往往不是 `SKILL.md` 而是 `scripts/`——它被执行，不被读进上下文，所以它不参与注意力竞价，也就不会被漂移掉。**
+
+> **补一条（2026-09-05 追问四后）：工具有三个来源——软件自带的、MCP 接的、CLI 经终端的。CLI 路是一只手加模型脑子里的说明书，MCP 路是一份契约加背后一个服务加随工具来的说明书；有终端时前者省，没终端时只有后者。模型在哪条路上都只做「开口」这一件事。**
 
 ---
 
