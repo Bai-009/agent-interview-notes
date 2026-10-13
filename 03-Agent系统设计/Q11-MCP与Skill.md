@@ -444,6 +444,8 @@ Codex 的做法是直接用各操作系统提供的圈：**macOS 用 Seatbelt（
 
 **第 4 条（追问四）：背后那套软件叫「服务」，不叫「SDK」。** 首答与追问三都把 MCP 背后跑着的软件叫 SDK。概念对（一套跑着的软件，对外列出工具），词错——SDK 是**用来写**它的库（MCP 官方发的 Python / TypeScript SDK、Anthropic SDK 里的 MCP 助手）。面试里说「MCP 背后是一套 SDK」会被理解成另一样东西。日常口语「GitHub 的 MCP」指的就是那个服务，可以照用；要解释时说「背后跑着一个服务」。
 
+**第 5 条（2026-10-12，维护方自查）：基金会的名字是 Agentic AI Foundation（AAIF），不是「Agent AI Foundation」。** 7.6 时间线原写作「Agent AI Foundation」，二期题库调研时读基金会官网 About 页核出：原文「Agentic AI Foundation (AAIF)」，Linux Foundation 旗下；托管项目列有 MCP、goose、AGENTS.md、A2A、agentgateway。已改正文与[台账](../00-索引/基线核查台账.md)；论点（MCP 已不归 Anthropic）不变。
+
 ### ⚠️ 存疑不背书
 
 | 说法 | 为什么不背书 |
@@ -468,7 +470,7 @@ Codex 的做法是直接用各操作系统提供的圈：**macOS 用 Seatbelt（
 
 | 时间 | 事件 | 意味着什么 |
 | --- | --- | --- |
-| 2025-12 | Anthropic 联合 OpenAI、Block 等成立 **Agent AI Foundation**（Linux Foundation 旗下），MCP 转由基金会持有 | **MCP 已经不归 Anthropic 了。** 说「Anthropic 的协议」现在是错的 |
+| 2025-12 | Anthropic 联合 OpenAI、Block 等成立 **Agentic AI Foundation**（AAIF，Linux Foundation 旗下；2026-10-12 更正名称，见 7.5 第 5 条），MCP 转由基金会持有 | **MCP 已经不归 Anthropic 了。** 说「Anthropic 的协议」现在是错的 |
 | 2025-12 | OpenAI 在 Codex 官方支持 Skills | 不是社区桥接，是**竞争对手官方采纳了对方的格式** |
 | 2026-08-06 | **Agent Plugins 1.0.0** 发布：Vercel 发起，AWS、Anysphere（Cursor）、GitHub、Microsoft、OpenAI 共同定稿，Google 同日加入核心维护。一个 plugin = `plugin.json` + 可选 `skills/` + 可选 `mcp.json`。首发客户端 ChatGPT、Codex、Cursor、GitHub Copilot、Kiro、VS Code | **Skill 和 MCP 被打进了同一个跨厂商的分发单位** |
 
